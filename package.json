@@ -1,6 +1,6 @@
 {
   "name": "dsh-deep-work",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Deep Work — a knowledge-work mode for DeepSeek Harness: research, writing, documents, spreadsheets, presentations, and verified deliverables.",
   "license": "MIT",
   "type": "module",

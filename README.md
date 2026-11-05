@@ -35,13 +35,18 @@ plugin_manager install_bundle D:\Codebase\dsh-plugins\deep-work
 The bundle declares a `deep-work` preset. Start a new session, choose **Deep Work**
 from the mode selector, select a workspace, and describe the deliverable.
 
-A **Deep Work** quick-start action is also added to the sidebar footer and to the
-blank-session hero row. It opens a new session with the `deep-work` preset
-already selected. Sessions in Deep Work show a small mode badge in the
-conversation header.
+A **Deep Work** cockpit is added to the right sidebar. It reads the current
+session workspace and shows:
 
-The existing right-sidebar **Deliverables** and **Files** tabs provide the
-artifact rail. Deep Work deliberately does not duplicate them.
+- the task objective, deliverable, status, and next step from `.deep-work/task.md`
+- the checklist and progress bar from `.deep-work/plan.md`
+- files in `deliverables/`, clickable into the document preview
+- source count from `.deep-work/sources.md`
+- working files in `.deep-work/`
+
+The cockpit opens once when a Deep Work session begins. The small **Deep Work**
+chip in the conversation header reopens it. The existing right-sidebar **Files**
+tab remains available for the raw directory tree.
 
 ## Use
 

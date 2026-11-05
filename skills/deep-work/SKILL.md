@@ -197,6 +197,12 @@ user did not ask for it. Before resuming, read it first. After each significant
 step, update `Status` and `Next step`. Never leave the file claiming a completed
 step that was not actually done.
 
+The Deep Work cockpit in the right sidebar reads these exact sections from
+`task.md`: `Objective`, `Deliverable`, `Status`, and `Next step`. It reads the
+checklist in `plan.md`, the source count in `sources.md`, and the files in
+`deliverables/`. Keep those headings and checkbox lines current so the cockpit
+reflects the real task rather than a stale summary.
+
 If the session is compacted, the task file and source ledger are the recovery
 path. Keep them accurate enough that another agent could continue the work.
 

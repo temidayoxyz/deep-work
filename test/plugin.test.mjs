@@ -47,7 +47,7 @@ test('host apply registers the deep-work skill', async () => {
   assert.equal(registered[0].resourceBase.kind, 'directory')
 })
 
-test('client apply registers a locale and three Deep Work actions', async () => {
+test('client apply registers the Deep Work tab, title, and header badge', async () => {
   let capture
   globalThis.window = {
     __ModuleLoader__: {
@@ -65,22 +65,20 @@ test('client apply registers a locale and three Deep Work actions', async () => 
     createElement() {},
     useState(value) { return [value, () => {}] },
     useCallback(fn) { return fn },
+    useEffect() {},
   }
   const module = capture.factory(name => {
     if (name === 'react') return React
     throw new Error(`unexpected require: ${name}`)
   })
 
-  const effects = []
   const slots = []
   const locales = []
+  const tabTypes = []
   const context = {
-    effect(create, label) {
-      effects.push(label)
-      const dispose = create()
-      return dispose
-    },
+    effect(create) { return create() },
     locale: {
+      bind() { return key => key },
       register(ns, dicts) {
         locales.push({ ns, dicts })
         return () => {}
@@ -92,17 +90,27 @@ test('client apply registers a locale and three Deep Work actions', async () => 
         return () => {}
       },
     },
-    uiWorkspace: { startSession() {} },
+    sidebarRightTabs: {
+      register(definition) {
+        tabTypes.push(definition)
+        return () => {}
+      },
+    },
+    sidebarRight: { openResource() {} },
+    remote: { workspaceFiles: {} },
   }
 
-  assert.deepEqual(module.inject, ['slots', 'locale', 'uiWorkspace'])
+  assert.deepEqual(module.inject, ['slots', 'locale', 'sidebarRightTabs', 'sidebarRight', 'remote'])
   module.apply(context)
   assert.equal(locales.length, 1)
   assert.equal(locales[0].ns, 'deepWork')
+  assert.equal(tabTypes.length, 1)
+  assert.equal(tabTypes[0].id, 'dsh-deep-work/cockpit')
+  assert.deepEqual(tabTypes[0].patterns, ['dsh-resource://deep-work/**'])
   assert.equal(slots.length, 3)
   assert.deepEqual(slots.map(slot => slot.name), [
-    'sidebar.footer.action',
-    'conversation.hero.options',
+    'sidebar.right.pane.tab',
+    'sidebar.right.pane.tab.title',
     'conversation.session.header.actions',
   ])
 })
