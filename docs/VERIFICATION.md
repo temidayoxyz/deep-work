@@ -24,8 +24,9 @@ All pass. The test suite covers:
 
 ## Installation
 
-`plugin_manager install_bundle` returned `application: applied` with no warnings
-for `dsh-deep-work@0.4.2`.
+`plugin_manager` returned `application: applied` with no warnings for
+`dsh-deep-work`. The profile bundle entry is `dsh-deep-work`, linked to this
+checkout and currently at version `0.4.2`.
 
 Host inspection confirmed the preset row is present:
 
