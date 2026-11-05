@@ -62,10 +62,11 @@ The client module was exercised with the module-loader contract and registers:
 - `conversation.session.header.actions` as `deep-work`
 - the `deepWork` locale namespace
 
-The running Electron process predates the 0.4.0 client bundle installation. The
-client bundle graph is composed at application boot, so the cockpit requires a
-full quit and reopen of DeepSeek Harness. After that restart, the live slot
-inspection should show the registrations.
+The running Electron process now contains this installation. A live client slot
+inspection shows the `deep-work` occupant active in
+`conversation.session.header.actions`, so the cockpit registration is confirmed
+without requiring another restart. The remaining items above are behaviour checks
+for a real Deep Work session rather than installation checks.
 
 ## Manual acceptance checks after restart
 

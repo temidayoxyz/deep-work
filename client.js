@@ -1,4 +1,4 @@
-window.__ModuleLoader__.load({
+﻿window.__ModuleLoader__.load({
   id: 'dsh-deep-work',
   factory(require) {
     const React = require('react')
@@ -20,7 +20,9 @@ window.__ModuleLoader__.load({
       'state.empty': 'No Deep Work task yet',
       'state.emptyHint': 'Start a substantial task and ask Deep Work to keep its brief and plan in .deep-work/.',
       'section.task': 'Task',
+      'section.timeline': 'Timeline',
       'section.plan': 'Plan',
+      'section.todo': 'To-Do',
       'section.artifacts': 'Artifacts',
       'section.context': 'Context',
       'section.activity': 'Activity',
@@ -48,7 +50,9 @@ window.__ModuleLoader__.load({
       'state.empty': '还没有深度工作任务',
       'state.emptyHint': '开始一项较大的任务，让深度工作把任务说明和计划保存到 .deep-work/。',
       'section.task': '任务',
+      'section.timeline': '时间线',
       'section.plan': '计划',
+      'section.todo': '待办',
       'section.artifacts': '交付物',
       'section.context': '上下文',
       'section.activity': '活动',
@@ -369,6 +373,9 @@ window.__ModuleLoader__.load({
         const sources = countSources(state.sourcesText)
         const hasTask = typeof task === 'string' && task.trim().length > 0
         const statusTone = status !== undefined && /complete|done|finished|verified/i.test(status) ? 'good' : status !== undefined && /blocked|waiting|error/i.test(status) ? 'warn' : 'neutral'
+        const stages = ['Brief', 'Context', 'Evidence', 'Plan', 'Produce', 'Verify', 'Deliver']
+        const progress = checklist.length > 0 ? (done / checklist.length) : (hasTask ? 0.14 : 0)
+        const currentStage = hasTask ? Math.min(stages.length - 1, Math.max(0, Math.round(progress * (stages.length - 1)))) : 0
 
         const open = path => {
           try { ctx.sidebarRight.openResource(fileAddress(sessionId, path)) } catch { /* surface stays usable */ }
@@ -466,6 +473,57 @@ window.__ModuleLoader__.load({
               h(Field, { label: t('field.objective'), value: objective }),
               h(Field, { label: t('field.deliverable'), value: deliverable }),
               h(Field, { label: t('field.next'), value: next }),
+            )
+          : null,
+
+        hasTask
+          ? h('div', { style: sectionStyle() },
+              h(CardHeader, { title: t('section.timeline') }),
+              h('div', { style: { display: 'grid', gap: '8px', padding: '12px' } },
+                stages.map((stage, index) => h('div', {
+                  key: stage,
+                  style: { display: 'flex', alignItems: 'center', gap: '10px', fontSize: '11.5px' },
+                },
+                  h('span', {
+                    style: {
+                      width: '10px',
+                      height: '10px',
+                      borderRadius: '999px',
+                      flex: 'none',
+                      background: index < currentStage
+                        ? 'var(--dsw-alias-state-success-primary)'
+                        : (index === currentStage ? 'var(--dsw-alias-brand-primary)' : 'var(--dsw-alias-bg-layer-3)'),
+                      border: index === currentStage ? '2px solid var(--dsw-alias-brand-primary)' : '1px solid var(--dsw-alias-border-l2)',
+                    },
+                  }),
+                  h('span', { style: { color: index <= currentStage ? 'var(--dsw-alias-label-primary)' : 'var(--dsw-alias-label-tertiary)', fontWeight: index === currentStage ? 650 : 500 } }, stage)
+                ))
+              ),
+          ) : null,
+
+
+        hasTask && checklist.filter(item => !item.done).length > 0
+          ? h('div', { style: sectionStyle() },
+              h(CardHeader, { title: t('section.todo'), count: String(checklist.filter(item => !item.done).length) }),
+              h('div', { style: { display: 'grid', gap: '0', padding: '5px 0 7px' } },
+                checklist.filter(item => !item.done).slice(0, 10).map((item, index) => h('div', {
+                  key: 	odo--,
+                  style: { display: 'flex', gap: '8px', padding: '5px 12px', fontSize: '11.5px', lineHeight: '1.45', color: 'var(--dsw-alias-label-secondary)' },
+                },
+                  h('span', {
+                    style: {
+                      width: '13px',
+                      height: '13px',
+                      flex: 'none',
+                      marginTop: '1px',
+                      borderRadius: '4px',
+                      border: '1px solid var(--dsw-alias-border-l2)',
+                      background: 'transparent',
+                    },
+                  }),
+                  h('span', null, item.text),
+                )),
+              ),
             )
           : null,
 
