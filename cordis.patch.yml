@@ -15,7 +15,7 @@
         id: deep-work
         name: Deep Work
         description: Research, writing, documents, spreadsheets, presentations, and verified deliverables — a general knowledge-work mode.
-        order: 4
+        order: 4.5
         plugins:
           # ── identity ────────────────────────────────────────────────────
           - id: persona
