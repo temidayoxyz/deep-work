@@ -79,6 +79,8 @@ Short requests may not need a task file. Long or multi-session requests should.
 - Browser automation and computer use are optional providers in Harness, not
   requirements of this plugin.
 
+See [docs/VERIFICATION.md](docs/VERIFICATION.md) for the test and installation record.
+
 ## License
 
 MIT
