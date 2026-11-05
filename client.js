@@ -165,7 +165,7 @@ window.__ModuleLoader__.load({
     function textOf(blocks) {
       if (!Array.isArray(blocks)) return ''
       return blocks
-        .filter(block => block && block.kind === 'text' && typeof block.text === 'string')
+        .filter(block => block && (block.kind === 'text' || block.type === 'text') && typeof block.text === 'string')
         .map(block => block.text)
         .join(' ')
         .replace(/\s+/g, ' ')
@@ -320,8 +320,8 @@ window.__ModuleLoader__.load({
         const [nonce, setNonce] = React.useState(0)
         const running = useSession(snapshot => snapshot?.running === true)
         const sessionTitle = useSessions(snapshot => sessionId === undefined ? undefined : snapshot?.byId?.[sessionId]?.displayTitle)
-        const order = useChat(snapshot => snapshot.order)
-        const nodeStore = useChat(snapshot => snapshot.nodes)
+        const order = useChat(snapshot => snapshot?.order ?? [])
+        const nodeStore = useChat(snapshot => snapshot?.nodes)
         const activity = React.useMemo(() => (order ?? []).slice(-12).map(key => activityItem(key, nodeStore?.get(key))).filter(Boolean), [order, nodeStore])
         const recentActivity = React.useMemo(() => activity.slice(-7).reverse(), [activity])
         const toolCount = activity.filter(item => item.kind === 'tool').length
@@ -476,6 +476,8 @@ window.__ModuleLoader__.load({
                 h('div', { style: { height: '5px', borderRadius: '999px', background: 'var(--dsw-alias-bg-layer-3)', overflow: 'hidden' } },
                   h('div', { style: { width: `${Math.round((done / checklist.length) * 100)}%`, height: '100%', background: 'var(--dsw-alias-state-success-primary)', borderRadius: '999px', transition: 'width 180ms ease' } }),
                 ),
+                h('div', { style: { marginTop: '5px', fontSize: '10.5px', color: 'var(--dsw-alias-label-tertiary)' } },
+                  `${done} of ${checklist.length} complete`),
               ),
               h('div', { style: { display: 'grid', gap: '0', padding: '5px 0 7px' } },
                 checklist.slice(0, 10).map((item, index) => h('div', {

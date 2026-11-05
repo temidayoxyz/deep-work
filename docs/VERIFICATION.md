@@ -2,7 +2,7 @@
 
 Date: 2026-11-05
 Harness profile: `desktop`
-Installed bundle: `dsh-deep-work@0.4.1`
+Installed bundle: `dsh-deep-work@0.4.2`
 
 ## Static checks
 
@@ -25,7 +25,7 @@ All pass. The test suite covers:
 ## Installation
 
 `plugin_manager install_bundle` returned `application: applied` with no warnings
-for `dsh-deep-work@0.4.1`.
+for `dsh-deep-work@0.4.2`.
 
 Host inspection confirmed the preset row is present:
 
@@ -71,7 +71,9 @@ inspection should show the registrations.
 1. Open a new session and confirm **Deep Work** is in the mode selector.
 2. Start a Deep Work session and confirm the right sidebar opens the **Deep Work** cockpit.
 3. Confirm the cockpit shows the task sections and an empty state before a task is written.
-4. Ask for a substantial deliverable and confirm `.deep-work/task.md`, `plan.md`,
+4. Confirm the **Activity** timeline shows current session steps and tool calls even
+   when `.deep-work/task.md` does not exist yet.
+5. Ask for a substantial deliverable and confirm `.deep-work/task.md`, `plan.md`,
    `sources.md`, and `deliverables/` populate the cockpit.
-5. Click a deliverable and confirm it opens in the document preview.
-6. Ask for a small `.docx` deliverable and confirm `verify_deliverable` runs.
+6. Click a deliverable and confirm it opens in the document preview.
+7. Ask for a small `.docx` deliverable and confirm `verify_deliverable` runs.
