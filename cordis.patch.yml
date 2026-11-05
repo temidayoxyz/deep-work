@@ -1,0 +1,167 @@
+# Deep Work bundle layer.
+#
+# The first row publishes the skill pack; the second declares the selectable
+# `deep-work` agent preset. The preset is assembled from the same agent-plane
+# rows used by the shipped knowledge-work presets, with its own persona and
+# workflow instructions.
+
+- insert:
+    - id: deep-work
+      name: dsh-deep-work
+
+    - id: preset-deep-work
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: deep-work
+        name: Deep Work
+        description: Research, writing, documents, spreadsheets, presentations, and verified deliverables — a general knowledge-work mode.
+        order: 4
+        plugins:
+          # ── identity ────────────────────────────────────────────────────
+          - id: persona
+            name: '@deepseek-ai/dsh-persona'
+            config:
+              prefix: >-
+                You are Deep Work, a knowledge-work agent powered by the {{model}} model.
+                Your working directory is the session workspace. You turn briefs into
+                finished, verified deliverables: research briefs, reports, assignments,
+                analyses, Word documents, spreadsheets, presentations, PDFs, and other
+                files a person can open and use.
+
+                You are not a code agent that reluctantly writes prose. Operate as a
+                careful researcher, editor, analyst, and production manager at once.
+                Use the deep-work skill for the operating protocol. Read the workspace
+                before asking questions. When a deliverable is substantial or likely to
+                span sessions, keep the task state in .deep-work/ as the skill describes.
+
+                Never claim work is complete until you have inspected the produced file
+                or artifact. Never invent a source, quotation, statistic, or citation.
+                Ask before sending, publishing, deleting, or changing anything outside
+                the workspace. Prefer a real file over a promise of one.
+
+          - id: agent-instructions
+            name: '@deepseek-ai/dsh-agent-instructions'
+            config:
+              maxBytes: 65536
+
+          # ── shell ───────────────────────────────────────────────────────
+          - id: tool-bash
+            name: '@deepseek-ai/dsh-tool-bash'
+            disabled: !!js process.platform === 'win32'
+
+          - id: tool-pwsh
+            name: '@deepseek-ai/dsh-tool-pwsh'
+            disabled: !!js process.platform !== 'win32'
+
+          # ── filesystem ──────────────────────────────────────────────────
+          - id: tool-fs
+            name: '@deepseek-ai/dsh-tool-fs'
+
+          - id: tool-fs-search
+            name: '@deepseek-ai/dsh-tool-fs-search'
+            config:
+              sampleOverCapGlobResults: false
+
+          # ── background jobs ─────────────────────────────────────────────
+          - id: tool-jobs
+            name: '@deepseek-ai/dsh-tool-jobs'
+
+          # ── skills and discovery ────────────────────────────────────────
+          - id: skill-filesystem
+            name: '@deepseek-ai/dsh-skill-filesystem'
+
+          - id: tool-skill
+            name: '@deepseek-ai/dsh-tool-skill'
+
+          # ── goals and planning ──────────────────────────────────────────
+          - id: tool-goal
+            name: '@deepseek-ai/dsh-tool-goal'
+
+          - id: planning
+            name: cordis:group
+            group: true
+            isolate:
+              planMode: true
+            config:
+              - id: plan-mode
+                name: '@deepseek-ai/dsh-plan-mode'
+                config:
+                  section: |
+                    You are in plan mode. Explore the workspace and the sources first. Do not mutate files, run formatters, or produce the deliverable while plan mode is active. Build a decision-complete plan, then submit it with exit_plan_mode. A conversational yes does not approve the plan; only exit_plan_mode approval does.
+
+          # ── compaction ──────────────────────────────────────────────────
+          - id: compaction
+            name: cordis:group
+            group: true
+            isolate:
+              compaction: true
+              toolResultPruner: true
+            config:
+              - id: compaction-basic
+                name: '@deepseek-ai/dsh-compaction-basic'
+
+              - id: command-compact
+                name: '@deepseek-ai/dsh-command-compact'
+
+              - id: tool-result-pruner
+                name: '@deepseek-ai/dsh-compaction-tool-result-pruner'
+                config:
+                  thresholdChars: 8192
+                  headChars: 4096
+                  tailChars: 1024
+
+          # ── delegation and workflows ────────────────────────────────────
+          - id: delegation
+            name: cordis:group
+            group: true
+            isolate:
+              workflowEngine: true
+            config:
+              - id: tool-subagent-control
+                name: '@deepseek-ai/dsh-tool-subagent-control'
+
+              - id: tool-subagent-list-agents
+                name: '@deepseek-ai/dsh-tool-subagent-control/list-agents'
+
+              - id: tool-subagent
+                name: '@deepseek-ai/dsh-tool-subagent'
+                config:
+                  provider: spawn
+                  toolName: subagent
+                  backgroundMode: continuable
+
+              - id: tool-subagent-fork
+                name: '@deepseek-ai/dsh-tool-subagent'
+                config:
+                  provider: fork
+                  toolName: subagent_fork
+                  backgroundMode: continuable
+
+              - id: workflow-ptc
+                name: '@deepseek-ai/dsh-workflow-ptc'
+                config:
+                  provider: spawn
+
+              - id: tool-workflow
+                name: '@deepseek-ai/dsh-tool-workflow'
+
+              - id: tool-ralph
+                name: '@deepseek-ai/dsh-tool-ralph'
+                config:
+                  subagentProvider: spawn
+                  maxRounds: 64
+
+          # ── remaining model-facing rows ─────────────────────────────────
+          - id: tool-ask-user
+            name: '@deepseek-ai/dsh-tool-ask-user'
+
+          - id: tool-todo
+            name: '@deepseek-ai/dsh-tool-todo'
+            config:
+              allowParallelInProgress: true
+
+          - id: tool-web
+            name: '@deepseek-ai/dsh-tool-web'
+            config:
+              fetch: true
+              searchTimeoutMs: 60000

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Deep Work">
+  <rect width="64" height="64" rx="14" fill="#1f3a34"/>
+  <path d="M18 17h15.5c8.3 0 13.5 5.5 13.5 15s-5.2 15-13.5 15H18V17Z" fill="none" stroke="#d9f0e5" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M18 32h13" stroke="#d9f0e5" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="47" cy="46" r="8" fill="#e5b567"/>
+  <path d="M44 46h6M47 43v6" stroke="#1f3a34" stroke-width="2.4" stroke-linecap="round"/>
+</svg>
