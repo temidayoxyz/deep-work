@@ -106,3 +106,75 @@ test('client apply registers a locale and three Deep Work actions', async () => 
     'conversation.session.header.actions',
   ])
 })
+
+test('deliverable detection recognises office, pdf, html, and empty files', async () => {
+  const module = await import(pathToFileURL(join(root, 'verify.js')).href)
+
+  const bytes = text => new TextEncoder().encode(text)
+  const docx = module.inspectDeliverable(
+    { path: 'deliverables/report.docx' },
+    { bytes: 2048, head: bytes('PK\u0003\u0004rest') },
+  )
+  assert.equal(docx.ok, true)
+  assert.equal(docx.kind, 'zip-office')
+
+  const pdf = module.inspectDeliverable(
+    { path: 'deliverables/report.pdf' },
+    { bytes: 2048, head: bytes('%PDF-1.7') },
+  )
+  assert.equal(pdf.ok, true)
+  assert.equal(pdf.kind, 'pdf')
+
+  const html = module.inspectDeliverable(
+    { path: 'deliverables/page.html' },
+    { bytes: 512, head: bytes('<!doctype html><html>') },
+  )
+  assert.equal(html.ok, true)
+  assert.equal(html.kind, 'html')
+
+  const empty = module.inspectDeliverable(
+    { path: 'deliverables/empty.pdf' },
+    { bytes: 0, head: new Uint8Array() },
+  )
+  assert.equal(empty.ok, false)
+  assert.match(empty.summary, /empty/)
+})
+
+test('verify tool registers and inspects a deliverable without writing', async () => {
+  const module = await import(pathToFileURL(join(root, 'verify.js')).href)
+  let definition
+  const context = {
+    workingDirectory: { defaultDirectory: root },
+    fs: {
+      async resolve(path, options) {
+        assert.equal(options.cwd, root)
+        return { path }
+      },
+      async stat() {
+        return { type: 'file', size: 42 }
+      },
+      async readByteRange() {
+        return new TextEncoder().encode('%PDF-1.7')
+      },
+    },
+    tools: {
+      register(value) {
+        definition = value
+        return () => {}
+      },
+    },
+  }
+
+  module.registerVerifyTool(context)
+  assert.equal(definition.name, 'verify_deliverable')
+  assert.deepEqual(definition.parameters.required, ['path'])
+
+  const result = await definition.execute(
+    { path: 'deliverables/report.pdf' },
+    { agent: undefined, signal: new AbortController().signal },
+  )
+  assert.equal(result.ok, true)
+  assert.equal(result.kind, 'pdf')
+  assert.equal(result.bytes, 42)
+})
+

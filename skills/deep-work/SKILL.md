@@ -146,6 +146,8 @@ A deliverable is not done until it has been opened or rendered and checked.
 
 ### Files
 - Confirm each output exists, is non-empty, and has the expected extension.
+- Call `verify_deliverable` for every delivered file. It checks the file's size
+  and container signature without modifying it.
 - Open or render it with the appropriate Office skill or tool.
 - Check for: missing sections, placeholder text, broken tables, clipped text,
   overflowing slides, inconsistent numbering, and accidental lorem ipsum.

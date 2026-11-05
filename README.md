@@ -19,6 +19,8 @@ artifact, verify it, and hand back a file — not just a chat answer.
 - The **deep-work** skill, a repeatable protocol for evidence-backed knowledge work.
 - A workspace task protocol under `.deep-work/` so long tasks can be resumed.
 - A deliverables convention: `deliverables/` in the session workspace.
+- A `verify_deliverable` tool that checks a file's existence, size, and container
+  signature before the agent claims it is ready.
 - Verification rules for `.docx`, `.xlsx`, `.pptx`, `.pdf`, HTML, and data files.
 
 ## Install
