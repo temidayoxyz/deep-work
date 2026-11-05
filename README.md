@@ -21,6 +21,7 @@ artifact, verify it, and hand back a file — not just a chat answer.
 - A deliverables convention: `deliverables/` in the session workspace.
 - A `verify_deliverable` tool that checks a file's existence, size, and container
   signature before the agent claims it is ready.
+- Time context and scheduling tools for time-aware research and recurring reports.
 - Verification rules for `.docx`, `.xlsx`, `.pptx`, `.pdf`, HTML, and data files.
 
 ## Install
