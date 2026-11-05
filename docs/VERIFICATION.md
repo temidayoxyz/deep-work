@@ -2,7 +2,7 @@
 
 Date: 2026-11-05
 Harness profile: `desktop`
-Installed bundle: `dsh-deep-work@0.4.0`
+Installed bundle: `dsh-deep-work@0.4.1`
 
 ## Static checks
 
@@ -25,7 +25,7 @@ All pass. The test suite covers:
 ## Installation
 
 `plugin_manager install_bundle` returned `application: applied` with no warnings
-for `dsh-deep-work@0.4.0`.
+for `dsh-deep-work@0.4.1`.
 
 Host inspection confirmed the preset row is present:
 

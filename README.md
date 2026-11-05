@@ -43,6 +43,8 @@ session workspace and shows:
 - files in `deliverables/`, clickable into the document preview
 - source count from `.deep-work/sources.md`
 - working files in `.deep-work/`
+- a live activity timeline from the current session's chat nodes, so the panel
+  shows what is happening even before the task brief is written
 
 The cockpit opens once when a Deep Work session begins. The small **Deep Work**
 chip in the conversation header reopens it. The existing right-sidebar **Files**

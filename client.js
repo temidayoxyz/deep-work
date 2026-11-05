@@ -23,6 +23,11 @@ window.__ModuleLoader__.load({
       'section.plan': 'Plan',
       'section.artifacts': 'Artifacts',
       'section.context': 'Context',
+      'section.activity': 'Activity',
+      'activity.empty': 'No activity yet.',
+      'status.running': 'Running',
+      'status.ready': 'Ready',
+      'session.current': 'Current session',
       'field.status': 'Status',
       'field.deliverable': 'Deliverable',
       'field.next': 'Next step',
@@ -46,6 +51,11 @@ window.__ModuleLoader__.load({
       'section.plan': '计划',
       'section.artifacts': '交付物',
       'section.context': '上下文',
+      'section.activity': '活动',
+      'activity.empty': '还没有活动。',
+      'status.running': '运行中',
+      'status.ready': '就绪',
+      'session.current': '当前会话',
       'field.status': '状态',
       'field.deliverable': '交付物',
       'field.next': '下一步',
@@ -150,6 +160,43 @@ window.__ModuleLoader__.load({
     function countSources(markdown) {
       if (typeof markdown !== 'string') return 0
       return markdown.split(/\r?\n/).filter(line => /https?:\/\//.test(line) || /^\s*[-*]\s+/.test(line)).length
+    }
+
+    function textOf(blocks) {
+      if (!Array.isArray(blocks)) return ''
+      return blocks
+        .filter(block => block && block.kind === 'text' && typeof block.text === 'string')
+        .map(block => block.text)
+        .join(' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+    }
+
+    function activityItem(key, node) {
+      if (node === undefined) return undefined
+      if (node.kind === 'user' || node.kind === 'steering' || node.kind === 'turn-trigger') {
+        const detail = textOf(node.data?.content)
+        return { key, kind: 'user', label: 'You', detail: detail.length > 0 ? detail.slice(0, 110) : undefined }
+      }
+      if (node.kind === 'assistant-step') {
+        const detail = textOf(node.data?.blocks)
+        return detail.length === 0
+          ? undefined
+          : { key, kind: 'assistant', label: 'Assistant', detail: detail.slice(0, 110) }
+      }
+      if (node.kind === 'tool-call') {
+        const root = node.data?.root
+        const name = root?.name ?? root?.call?.name ?? root?.toolName ?? 'tool'
+        const running = root?.running === true || root?.phase === 'preparing'
+        return { key, kind: 'tool', label: name, detail: running ? 'running' : 'complete', running }
+      }
+      if (node.kind === 'turn-error') {
+        return { key, kind: 'error', label: 'Turn error', detail: node.data?.error?.message ?? node.data?.message }
+      }
+      if (node.kind === 'command') {
+        return { key, kind: 'command', label: `/${node.data?.name ?? 'command'}`, detail: undefined }
+      }
+      return undefined
     }
 
     async function readText(ctx, sessionId, path, signal) {
@@ -268,9 +315,16 @@ window.__ModuleLoader__.load({
     }
 
     function createCockpit(ctx) {
-      function Cockpit({ sessionId, t }) {
+      function Cockpit({ sessionId, t, useSession, useSessions, useChat }) {
         const [state, setState] = React.useState({ loading: true, task: undefined, planText: '', sourcesText: '', artifacts: [], working: [] })
         const [nonce, setNonce] = React.useState(0)
+        const running = useSession(snapshot => snapshot?.running === true)
+        const sessionTitle = useSessions(snapshot => sessionId === undefined ? undefined : snapshot?.byId?.[sessionId]?.displayTitle)
+        const order = useChat(snapshot => snapshot.order)
+        const nodeStore = useChat(snapshot => snapshot.nodes)
+        const activity = React.useMemo(() => (order ?? []).slice(-12).map(key => activityItem(key, nodeStore?.get(key))).filter(Boolean), [order, nodeStore])
+        const recentActivity = React.useMemo(() => activity.slice(-7).reverse(), [activity])
+        const toolCount = activity.filter(item => item.kind === 'tool').length
 
         React.useEffect(() => {
           if (typeof sessionId !== 'string') return undefined
@@ -378,13 +432,28 @@ window.__ModuleLoader__.load({
           ? h('div', { style: { fontSize: '12px', color: 'var(--dsw-alias-label-tertiary)', padding: '8px 2px' } }, t('state.loading'))
           : null,
 
-        !state.loading && !hasTask
+        !state.loading && !hasTask && activity.length === 0
           ? h('div', { style: { ...sectionStyle(), padding: '16px 14px', display: 'grid', gap: '7px' } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
                 h(DeepWorkGlyph, { size: 16 }),
                 h('span', { style: { fontSize: '13px', fontWeight: 650 } }, t('state.empty')),
               ),
               h('span', { style: { fontSize: '12px', lineHeight: '1.55', color: 'var(--dsw-alias-label-secondary)' } }, t('state.emptyHint')),
+            )
+          : null,
+
+        !state.loading && !hasTask && activity.length > 0
+          ? h('div', { style: sectionStyle() },
+              h(CardHeader, {
+                title: t('session.current'),
+                action: h(Pill, { tone: running ? 'warn' : 'good' }, running ? t('status.running') : t('status.ready')),
+              }),
+              h('div', { style: { display: 'grid', gap: '5px', padding: '11px 12px' } },
+                h('span', { style: { fontSize: '13px', lineHeight: '1.45', fontWeight: 600, color: 'var(--dsw-alias-label-primary)', overflowWrap: 'anywhere' } },
+                  sessionTitle ?? 'Deep Work session'),
+                h('span', { style: { fontSize: '11px', color: 'var(--dsw-alias-label-tertiary)' } },
+                  `${toolCount} tool${toolCount === 1 ? '' : 's'} · ${activity.length} step${activity.length === 1 ? '' : 's'} · no task brief yet`),
+              ),
             )
           : null,
 
@@ -432,6 +501,58 @@ window.__ModuleLoader__.load({
                 )),
             )
           : null,
+
+        h('div', { style: sectionStyle() },
+          h(CardHeader, { title: t('section.activity'), count: recentActivity.length }),
+          recentActivity.length === 0
+            ? h('div', { style: { padding: '11px 12px', fontSize: '12px', color: 'var(--dsw-alias-label-tertiary)' } }, t('activity.empty'))
+            : recentActivity.map(item => h('div', {
+                key: item.key,
+                style: { display: 'flex', gap: '8px', padding: '7px 12px', borderTop: '1px solid var(--dsw-alias-border-l1)' },
+              },
+              h('span', {
+                style: {
+                  width: '7px',
+                  height: '7px',
+                  borderRadius: '999px',
+                  flex: 'none',
+                  marginTop: '5px',
+                  background: item.kind === 'error'
+                    ? 'var(--dsw-alias-state-error-primary)'
+                    : item.kind === 'tool'
+                      ? (item.running ? 'var(--dsw-alias-state-warn-primary)' : 'var(--dsw-alias-state-success-primary)')
+                      : item.kind === 'user'
+                        ? 'var(--dsw-alias-brand-primary)'
+                        : 'var(--dsw-alias-label-tertiary)',
+                },
+              }),
+              h('span', { style: { minWidth: 0, display: 'grid', gap: '1px' } },
+                h('span', {
+                  style: {
+                    fontSize: '11.5px',
+                    lineHeight: '1.4',
+                    fontWeight: item.kind === 'tool' ? 600 : 500,
+                    color: 'var(--dsw-alias-label-primary)',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  },
+                }, item.label),
+                item.detail === undefined
+                  ? null
+                  : h('span', {
+                      style: {
+                        fontSize: '10.5px',
+                        lineHeight: '1.4',
+                        color: item.kind === 'error' ? 'var(--dsw-alias-state-error-primary)' : 'var(--dsw-alias-label-tertiary)',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      },
+                    }, item.detail),
+              ),
+            )),
+        ),
 
         h('div', { style: sectionStyle() },
           h(CardHeader, { title: t('section.artifacts'), count: state.artifacts.length }),
